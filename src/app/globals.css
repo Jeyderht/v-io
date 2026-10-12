@@ -1,0 +1,457 @@
+/* =========================================================
+   V-IO · estilos globales
+   Tailwind sin "preflight": la web se diseñó sobre los estilos
+   por defecto del navegador (line-height normal, márgenes, etc.)
+   y el reset de Tailwind los cambiaría.
+   Casi todo el diseño son clases de Tailwind en los componentes;
+   aquí solo van estados (:hover, :focus), animaciones y media
+   queries que dependen de clases con nombre (.dock, .herofull...).
+   ========================================================= */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Colores de marca (bg-ink, text-muted, ...) */
+@theme {
+  --color-ink: #f7f9ff;
+  --color-muted: #9db0c2;
+  --color-dim: #7f93a6;
+  --color-night: #000f15;
+  --color-aqua: #86d3d8;
+  --color-danger: #ff8a95;
+  --color-ok: #7ff5cc;
+  --color-lavender: #b6c2e7;
+  --color-mist: #ecf1ff;
+  --color-slate: #33485a;
+}
+
+@layer base {
+  /* ---------- Base ---------- */
+  body {
+    margin: 0;
+    background: #000;
+  }
+  /* Botones y campos usan la fuente de la página (antes: font: inherit en cada uno) */
+  button,
+  input,
+  textarea {
+    font: inherit;
+  }
+  a {
+    color: #f7f9ff;
+  }
+  a:hover {
+    color: #ffffff;
+  }
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible,
+  input:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 3px;
+  }
+
+  /* Preguntas frecuentes (<details>) */
+  summary {
+    cursor: pointer;
+    list-style: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  details[open] .chev {
+    transform: rotate(90deg);
+  }
+  .chev {
+    transition: transform 0.25s ease;
+  }
+
+  /* Formularios */
+  input::placeholder {
+    color: #7f93a6;
+  }
+  input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  /* ---------- Interacción ---------- */
+  .vcard .cover {
+    transition:
+      transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+      box-shadow 0.45s ease;
+  }
+  .vcard:hover .cover {
+    transform: translateY(-6px) scale(1.015);
+  }
+  .press {
+    transition: transform 0.15s ease;
+  }
+  .press:active {
+    transform: scale(0.96);
+  }
+  .page {
+    animation: pageIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  /* ---------- Portada (hero) ----------
+     El alto (--hd escritorio, --hm móvil, en % de pantalla) y las imágenes
+     se configuran en Admin → Portada. .hero-d = escritorio, .hero-m = móvil. */
+  .playerbar {
+    bottom: calc(128px + env(safe-area-inset-bottom));
+  }
+  .herofull {
+    height: calc(var(--hm, 100) * 1vh);
+    height: calc(var(--hm, 100) * 1svh);
+  }
+  .herostage {
+    background: radial-gradient(ellipse 80% 90% at 72% 35%, #00245a 0%, #000c22 55%, #00040c 100%);
+  }
+  .hero-d {
+    display: none;
+  }
+
+  /* Escritorio horizontal: imágenes de escritorio, texto a la izquierda */
+  @media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+    .herofull {
+      height: calc(var(--hd, 100) * 1vh);
+    }
+    .hero-d {
+      display: block;
+    }
+    .hero-m {
+      display: none;
+    }
+    .herocontent {
+      align-items: flex-start !important;
+      text-align: left !important;
+      padding-left: max(140px, 8vw) !important;
+      padding-bottom: 120px !important;
+    }
+    .herofull .playerbar {
+      left: max(140px, 8vw) !important;
+      margin-left: 0 !important;
+      bottom: 84px !important;
+    }
+  }
+
+  /* Sliders de Admin → Portada */
+  input[type="range"] {
+    accent-color: #f7f9ff;
+    width: 100%;
+    height: 28px;
+    margin: 0;
+  }
+
+  /* ---------- Footer ---------- */
+  .fgrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 34px 24px;
+  }
+  @media (min-width: 900px) {
+    .fgrid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  .fcol {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .fhead {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #f7f9ff;
+  }
+  .flink {
+    padding: 9px 0;
+    border: 0;
+    text-decoration: none;
+    letter-spacing: normal;
+    background: transparent;
+    color: #9db0c2;
+    font: inherit;
+    font-size: 16px;
+    text-align: left;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  .flink:hover {
+    color: #ffffff;
+  }
+  .fsign {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #9db0c2;
+    white-space: nowrap;
+  }
+  .fbrand {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #f7f9ff;
+  }
+  .fbrand img {
+    width: 16px;
+    height: 16px;
+    display: block;
+  }
+  .ftop {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #f7f9ff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .vfoot > div {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  @media (min-width: 600px) {
+    .vfoot > div {
+      padding-left: 26px !important;
+      padding-right: 26px !important;
+    }
+  }
+  /* Pantallas muy angostas: "Volver arriba" queda solo como icono (el texto sigue para lectores de pantalla) */
+  @media (max-width: 370px) {
+    .toplabel {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+  }
+  .fpay {
+    width: 66px;
+    height: 40px;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #ffffff0f;
+    border: 0.5px solid #ffffff26;
+  }
+  .fpay img {
+    display: block;
+    filter: invert(1);
+    opacity: 0.82;
+  }
+
+  /* ---------- Páginas internas ---------- */
+  .pagepad {
+    padding-top: 40px;
+  }
+
+  /* ---------- Escritorio: menú vertical a la izquierda ---------- */
+  @media (min-width: 900px) {
+    .shell {
+      padding-left: 100px;
+    }
+    .herofull {
+      margin-left: -100px;
+    }
+    .dockwrap {
+      top: 0 !important;
+      bottom: 0 !important;
+      left: 22px !important;
+      right: auto !important;
+      padding: 0 !important;
+      align-items: center !important;
+    }
+    .dock {
+      flex-direction: column !important;
+      padding: 10px 7px !important;
+      gap: 10px !important;
+    }
+    .dock a {
+      width: 46px !important;
+      padding: 0 !important;
+      justify-content: center !important;
+    }
+    .navlabel {
+      display: none !important;
+    }
+    .playerbar {
+      bottom: 32px;
+    }
+    .pagepad {
+      padding-top: 56px;
+    }
+  }
+
+  /* ---------- Accesibilidad ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
+/* ---------- Animaciones ---------- */
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(14%, -10%) scale(1.18);
+  }
+}
+@keyframes drift2 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(-16%, 12%) scale(0.9);
+  }
+}
+@keyframes sweep {
+  0% {
+    transform: rotate(28deg);
+  }
+  100% {
+    transform: rotate(-28deg);
+  }
+}
+@keyframes sweep2 {
+  0% {
+    transform: rotate(-34deg);
+  }
+  100% {
+    transform: rotate(30deg);
+  }
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.75);
+  }
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.22;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.36;
+    transform: scale(1.12);
+  }
+}
+@keyframes sheetUp {
+  from {
+    transform: translateY(60px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes strobe {
+  0%,
+  92%,
+  100% {
+    opacity: 0;
+  }
+  94%,
+  97% {
+    opacity: 0.25;
+  }
+}
+@keyframes prog {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+@keyframes xfade {
+  0%,
+  42% {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  50%,
+  92% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}
+@keyframes kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
