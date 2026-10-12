@@ -6,6 +6,16 @@
    ========================================================= */
 
 /* =========================================================
+   PORTADA (valores originales)
+   Lo que se usa mientras no se guarde nada en Admin → Portada,
+   y lo que carga el botón "Restablecer original".
+   d = escritorio, m = móvil (vacío = usa las de escritorio).
+   dMode: 'derecha' (foto a la derecha) o 'completa' (pantalla completa).
+   dW = ancho %, dX/dY y mX/mY = encuadre %, dH/mH = alto %, dark = oscurecer %.
+   ========================================================= */
+const PORTADA_DEFECTO = { d1: 'img/hero-1.jpg', d2: 'img/hero-2.jpg', dMode: 'derecha', dW: 62, dX: 50, dY: 18, dH: 100, m1: '', m2: '', mX: 55, mY: 25, mH: 100, dark: 0 };
+
+/* =========================================================
    TEXTOS LEGALES (pie de página → Licencia / Términos / Privacidad)
    "contacto" se arma con el WhatsApp de config.js.
    ========================================================= */
@@ -63,7 +73,9 @@ class App extends Component {
     super(props);
     Object.assign(this.state, {
       configured: !!(this.cfg().url && this.cfg().key),
-      aEmail: '', aPass: '', aBusy: false, aErr: '', listMsg: ''
+      aEmail: '', aPass: '', aBusy: false, aErr: '', listMsg: '',
+      // portada: heroSaved = lo publicado, heroDraft = lo que se edita en Admin → Portada
+      heroSaved: null, heroDraft: null, heroSaving: false, heroMsg: '', heroErr: false
     });
   }
 
@@ -112,6 +124,7 @@ class App extends Component {
     this._init = true;
     if (!this.state.configured) { this.setState({ adminChecked: true, items: null }); return; }
     this.disp = this.deviceId();
+    this.loadHero();
     const raw = this.ls('vio_admin');
     if (raw) { try { this.session = JSON.parse(raw); } catch (e) { this.session = null; } }
     if (this.session) await this.checkAdmin(); else this.setState({ adminChecked: true });
@@ -314,6 +327,61 @@ class App extends Component {
     this.loadMembers();
   }
 
+  /* ---------- Portada ---------- */
+  heroDefaults() { return Object.assign({}, PORTADA_DEFECTO); }
+  heroCfg() { return Object.assign(this.heroDefaults(), this.state.heroSaved || {}); }
+  // Enlace de Google Drive → enlace directo a la imagen; cualquier otra URL se usa tal cual
+  imgSrc(raw) {
+    const u = String(raw || '').trim();
+    if (!u) return '';
+    const id = this.parseDrive(u);
+    if (id && /drive\.google|docs\.google|^[a-zA-Z0-9_-]{25,}$/.test(u)) return 'https://lh3.googleusercontent.com/d/' + id + '=w2400';
+    return u;
+  }
+  // Estilos de la portada a partir de una configuración (preview = también las cajas de la vista previa)
+  heroView(c, preview) {
+    const n = (x, d) => (isFinite(Number(x)) ? Number(x) : d);
+    const d1 = this.imgSrc(c.d1) || 'img/hero-1.jpg', d2 = this.imgSrc(c.d2);
+    const m1 = this.imgSrc(c.m1) || d1, m2 = c.m1 ? this.imgSrc(c.m2) : d2;
+    const anim = (i, two) => (two ? (i === 0 ? 'animation: kenburns 16s ease-in-out infinite alternate;' : 'animation: xfade 14s ease-in-out infinite;') : 'animation: kenburns 16s ease-in-out infinite alternate;');
+    const base = 'position: absolute; top: 0; bottom: 0; height: 100%; object-fit: cover; ';
+    const dStyle = (i) => base + 'object-position: ' + n(c.dX, 50) + '% ' + n(c.dY, 18) + '%; ' +
+      (c.dMode === 'completa' ? 'left: 0; width: 100%; ' : 'left: auto; right: 0; width: ' + n(c.dW, 62) + '%; -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 32%); mask-image: linear-gradient(to right, transparent 0%, #000 32%); ') + anim(i, !!d2);
+    const mStyle = (i) => base + 'left: 0; width: 100%; object-position: ' + n(c.mX, 55) + '% ' + n(c.mY, 25) + '%; ' + anim(i, !!m2);
+    const v = {
+      d1, d2, hasD2: !!d2, m1, m2, hasM2: !!m2,
+      d1Style: dStyle(0), d2Style: dStyle(1), m1Style: mStyle(0), m2Style: mStyle(1),
+      hd: Math.max(50, Math.min(100, n(c.dH, 100))), hm: Math.max(50, Math.min(100, n(c.mH, 100))),
+      dark: 'position: absolute; inset: 0; pointer-events: none; background: rgba(0,0,0,' + (Math.max(0, Math.min(70, n(c.dark, 0))) / 100) + ')'
+    };
+    if (preview) {
+      const box = 'position: relative; overflow: hidden; border-radius: 16px; border: 0.5px solid #FFFFFF1F; background: radial-gradient(ellipse 80% 90% at 72% 35%, #00245A 0%, #000C22 55%, #00040C 100%); ';
+      v.dBox = box + 'width: 100%; aspect-ratio: 16 / ' + Math.round(9 * v.hd / 100 * 10) / 10;
+      v.mBox = box + 'width: 150px; aspect-ratio: 9 / ' + Math.round(19.5 * v.hm / 100 * 10) / 10;
+    }
+    return v;
+  }
+  async loadHero() {
+    if (!this.state.configured) return;
+    try {
+      const rows = await this.api('/rest/v1/ajustes?clave=eq.portada&select=valor');
+      if (rows && rows[0] && rows[0].valor) this.setState({ heroSaved: rows[0].valor });
+    } catch (e) {}
+  }
+  abrirPortada() { this.setState({ adminTab: 'portada', heroDraft: Object.assign({}, this.heroCfg()), heroMsg: '' }); }
+  setDraft(k, val) { this.setState({ heroDraft: Object.assign({}, this.state.heroDraft || this.heroCfg(), { [k]: val }), heroMsg: '' }); }
+  async saveHero() {
+    if (this.state.heroSaving) return;
+    const valor = Object.assign({}, this.state.heroDraft || this.heroCfg());
+    this.setState({ heroSaving: true, heroMsg: '' });
+    try {
+      await this.api('/rest/v1/ajustes?on_conflict=clave', { method: 'POST', auth: true, prefer: 'resolution=merge-duplicates,return=minimal', body: { clave: 'portada', valor } });
+      this.setState({ heroSaving: false, heroSaved: valor, heroMsg: 'Portada guardada y publicada', heroErr: false });
+    } catch (e) {
+      this.setState({ heroSaving: false, heroMsg: 'No se pudo guardar: ' + (e.message || 'error') + '. ¿Corriste el SQL de la portada en Supabase?', heroErr: true });
+    }
+  }
+
   /* ---------- Legales ---------- */
   legalDocs() {
     const wa = String((window.VIO_CONFIG || {}).WHATSAPP || '').replace(/\D/g, '');
@@ -326,9 +394,9 @@ class App extends Component {
      ========================================================= */
   renderVals() {
     const v = super.renderVals();
-    return Object.assign(v, this.valsAdminLogin(v), this.valsLegal(), this.valsCatalogoReal(v));
+    return Object.assign(v, this.valsAdminLogin(), this.valsLegal(), this.valsCatalogoReal(v), this.valsPortada(), this.valsFooter());
   }
-  valsAdminLogin(v) {
+  valsAdminLogin() {
     const cfgd = this.state.configured;
     return {
       notConfigured: !cfgd,
@@ -340,7 +408,7 @@ class App extends Component {
       doAdminLogin: () => this.adminLogin(),
       hasAErr: !!this.state.aErr, aErr: this.state.aErr,
       aBtnLabel: this.state.aBusy ? 'Entrando…' : 'Entrar como admin',
-      aBtnStyle: v.createBtnStyle,
+      aBtnStyle: this.state.aBusy ? ESTILOS.btnBusy : ESTILOS.btnHot,
       adminLogout: () => this.adminLogout(),
       hasListMsg: !!this.state.listMsg, listMsg: this.state.listMsg
     };
@@ -363,5 +431,39 @@ class App extends Component {
     const soon = Array.isArray(items) && items.length === 0;
     const tr = v.tracks.filter((t) => t.real);
     return { catalogSoon: soon, tracks: tr, noTracks: !soon && Array.isArray(items) && tr.length === 0 };
+  }
+  // hero = portada publicada (Inicio); heroPrev y heroGroups = editor de Admin → Portada
+  valsPortada() {
+    const dr = this.state.heroDraft || this.heroCfg();
+    const sl = (key, label, min, max, unit) => ({ label, min, max, value: dr[key], shown: dr[key] + unit, onInput: (e) => this.setDraft(key, Number(e.target.value)) });
+    const ln = (key, label, ph) => ({ label, value: dr[key] || '', placeholder: ph, onInput: (e) => this.setDraft(key, e.target.value) });
+    const heroGroups = [
+      { title: 'Escritorio', hint: 'Medida recomendada: 1920 × 1080 px (horizontal). Con "Foto a la derecha" también sirve una foto vertical de 1080 × 1350 px o más. Pega un enlace de Google Drive (compartido como "Cualquier persona con el enlace") o de una imagen.',
+        links: [ln('d1', 'Imagen principal', 'Enlace de Drive o https://…jpg'), ln('d2', 'Segunda imagen (opcional, se alterna)', 'Déjalo vacío para usar una sola')],
+        hasModes: true,
+        modes: [['derecha', 'Foto a la derecha'], ['completa', 'Pantalla completa']].map(([id, label]) => ({ label, pressed: dr.dMode === id ? 'true' : 'false', style: dr.dMode === id ? ESTILOS.segOn : ESTILOS.chipOff, pick: () => this.setDraft('dMode', id) })),
+        sliders: [].concat(dr.dMode === 'completa' ? [] : [sl('dW', 'Ancho de la foto', 35, 100, '%')], [sl('dX', 'Encuadre horizontal', 0, 100, '%'), sl('dY', 'Encuadre vertical', 0, 100, '%'), sl('dH', 'Alto de la portada', 50, 100, '% de pantalla')]) },
+      { title: 'Móvil', hint: 'Medida recomendada: 1080 × 1920 px (vertical 9:16). Si lo dejas vacío, se usan las imágenes de escritorio.',
+        links: [ln('m1', 'Imagen principal móvil', 'Vacío = usa la de escritorio'), ln('m2', 'Segunda imagen móvil (opcional)', 'Déjalo vacío para usar una sola')],
+        hasModes: false, modes: [],
+        sliders: [sl('mX', 'Encuadre horizontal', 0, 100, '%'), sl('mY', 'Encuadre vertical', 0, 100, '%'), sl('mH', 'Alto de la portada', 50, 100, '% de pantalla')] },
+      { title: 'Ajuste general', hint: 'Oscurece la foto si los botones no se leen bien.', links: [], hasModes: false, modes: [], sliders: [sl('dark', 'Oscurecer fondo', 0, 70, '%')] }
+    ];
+    return {
+      hero: this.heroView(this.heroCfg(), false), heroPrev: this.heroView(dr, true), heroGroups,
+      saveHero: () => this.saveHero(),
+      resetHero: () => this.setState({ heroDraft: this.heroDefaults(), heroMsg: 'Valores originales cargados. Toca Guardar para aplicarlos.', heroErr: false }),
+      saveHeroLabel: this.state.heroSaving ? 'Guardando…' : 'Guardar portada',
+      saveHeroStyle: 'min-height: 52px; padding: 12px 26px; border-radius: 999px; border: 0; cursor: pointer; font: inherit; font-size: 16px; font-weight: 700; ' + (this.state.heroSaving ? 'background: #FFFFFF26; color: #F7F9FF' : 'background: #F7F9FF; color: #000F15'),
+      hasHeroMsg: !!this.state.heroMsg, heroMsg: this.state.heroMsg,
+      heroMsgStyle: 'font-size: 14px; font-weight: 600; color: ' + (this.state.heroErr ? '#FF8A95' : '#7FF5CC')
+    };
+  }
+  valsFooter() {
+    return {
+      footCats: () => { this.go('visuales'); this.setState({ filtersOpen: true }); },
+      footAccount: this.state.member ? 'Mi cuenta' : 'Ingresar',
+      backTop: () => { try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, 0); } }
+    };
   }
 }

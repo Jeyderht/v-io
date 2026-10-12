@@ -5,7 +5,7 @@
 
    Las acciones que hablan con la base de datos (verify, logout,
    doUpload, togglePremItem, deleteItem, createMember, renewMember,
-   releaseMember, deleteMember...) están en js/app.js (class App).
+   releaseMember, deleteMember, abrirPortada...) están en js/app.js (class App).
    ========================================================= */
 
 /* =========================================================
@@ -383,9 +383,10 @@ class Component extends DCLogic {
       { value: String(members.filter((m) => Number(m.expira) > now).length), label: 'Miembros activos' },
       { value: String(members.filter((m) => !(m.disps || []).length && Number(m.expira) > now).length), label: 'Códigos sin usar' }
     ];
-    const adminTabs = [{ id: 'visuales', label: 'Visuales' }, { id: 'miembros', label: 'Miembros' }].map((tb) => ({
+    const adminTabs = [{ id: 'visuales', label: 'Visuales' }, { id: 'miembros', label: 'Miembros' }, { id: 'portada', label: 'Portada' }].map((tb) => ({
       label: tb.label, selected: this.state.adminTab === tb.id ? 'true' : 'false',
-      style: this.state.adminTab === tb.id ? ESTILOS.segOn : ESTILOS.segOff, pick: () => this.setState({ adminTab: tb.id })
+      style: this.state.adminTab === tb.id ? ESTILOS.segOn : ESTILOS.segOff,
+      pick: () => (tb.id === 'portada' ? this.abrirPortada() : this.setState({ adminTab: tb.id }))
     }));
     const upCats = CATEGORIAS.map((c) => ({
       label: c.label, pressed: this.state.upCat === c.id ? 'true' : 'false',
@@ -414,7 +415,7 @@ class Component extends DCLogic {
     return {
       isAdminUser, adminOk: isAdminUser, adminDenied: this.state.adminChecked && !isAdminUser, adminLoading: !this.state.adminChecked,
       openAdmin: () => { this.setState({ loginOpen: false }); this.go('admin'); },
-      stats, adminTabs, tabVisuales: this.state.adminTab === 'visuales', tabMiembros: this.state.adminTab === 'miembros',
+      stats, adminTabs, tabVisuales: this.state.adminTab === 'visuales', tabMiembros: this.state.adminTab === 'miembros', tabPortada: this.state.adminTab === 'portada',
       // formulario "Subir visual"
       driveUrl: this.state.driveUrl,
       onDriveUrl: (e) => this.setState({ driveUrl: e.target.value, upMsg: '' }),

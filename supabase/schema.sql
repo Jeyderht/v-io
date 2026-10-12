@@ -111,6 +111,21 @@ grant select, insert, update, delete on public.visuales, public.miembros to auth
 grant select on public.admins to authenticated;
 revoke all on public.visuales, public.miembros, public.admins from anon;
 
+-- Ajustes de la web (portada administrable)
+create table if not exists public.ajustes (
+  clave text primary key,
+  valor jsonb not null default '{}'::jsonb,
+  actualizado timestamptz not null default now()
+);
+alter table public.ajustes enable row level security;
+drop policy if exists "ajustes publicos" on public.ajustes;
+create policy "ajustes publicos" on public.ajustes for select to anon, authenticated using (true);
+drop policy if exists "admin ajustes" on public.ajustes;
+create policy "admin ajustes" on public.ajustes for all to authenticated
+  using (public.es_admin()) with check (public.es_admin());
+grant select on public.ajustes to anon, authenticated;
+grant insert, update, delete on public.ajustes to authenticated;
+
 -- =========================================================
 --  PASO FINAL: hazte administradora.
 --  1) Crea tu usuario en Authentication → Users → Add user
