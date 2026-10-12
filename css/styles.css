@@ -1,0 +1,105 @@
+/* =========================================================
+   V-IO · estilos globales
+   Casi todo el diseño está en los style="..." de la plantilla
+   (index.html). Aquí solo van reglas que no caben en línea:
+   estados (:hover, :focus), animaciones y media queries.
+   ========================================================= */
+
+/* ---------- Base ---------- */
+body { margin: 0; background: #000; }
+a { color: #F7F9FF; }
+a:hover { color: #FFFFFF; }
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+input:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 3px; }
+
+/* Preguntas frecuentes (<details>) */
+summary { cursor: pointer; list-style: none; }
+summary::-webkit-details-marker { display: none; }
+details[open] .chev { transform: rotate(90deg); }
+.chev { transition: transform .25s ease; }
+
+/* Formularios */
+input::placeholder { color: #7F93A6; }
+input[type=search]::-webkit-search-cancel-button { display: none; }
+
+/* ---------- Interacción ---------- */
+.vcard .cover { transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s ease; }
+.vcard:hover .cover { transform: translateY(-6px) scale(1.015); }
+.press { transition: transform .15s ease; }
+.press:active { transform: scale(.96); }
+.page { animation: pageIn .45s cubic-bezier(.2,.8,.2,1) both; }
+
+/* ---------- Animaciones ---------- */
+@keyframes pageIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes drift { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(14%,-10%) scale(1.18); } }
+@keyframes drift2 { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(-16%,12%) scale(.9); } }
+@keyframes sweep { 0% { transform: rotate(28deg); } 100% { transform: rotate(-28deg); } }
+@keyframes sweep2 { 0% { transform: rotate(-34deg); } 100% { transform: rotate(30deg); } }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.75); } }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+@keyframes breathe { 0%, 100% { opacity: .22; transform: scale(1); } 50% { opacity: .36; transform: scale(1.12); } }
+@keyframes sheetUp { from { transform: translateY(60px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes strobe { 0%, 92%, 100% { opacity: 0; } 94%, 97% { opacity: .25; } }
+@keyframes prog { from { width: 0; } to { width: 100%; } }
+@keyframes xfade { 0%, 42% { opacity: 0; transform: scale(1.04); } 50%, 92% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.04); } }
+@keyframes kenburns { from { transform: scale(1); } to { transform: scale(1.06); } }
+
+/* ---------- Portada (hero) ---------- */
+.playerbar { bottom: calc(128px + env(safe-area-inset-bottom)); }
+.herofull { height: 100vh; height: 100svh; }
+.herostage { background: radial-gradient(ellipse 80% 90% at 72% 35%, #00245A 0%, #000C22 55%, #00040C 100%); }
+
+/* Escritorio horizontal: foto a la derecha, texto a la izquierda */
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  .heroimg {
+    left: auto !important;
+    right: 0 !important;
+    width: min(62%, 1100px) !important;
+    object-position: 50% 18% !important;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 32%, #000 100%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 32%, #000 100%);
+  }
+  .herocontent {
+    align-items: flex-start !important;
+    text-align: left !important;
+    padding-left: max(140px, 8vw) !important;
+    padding-bottom: 120px !important;
+  }
+  .herofull .playerbar { left: max(140px, 8vw) !important; margin-left: 0 !important; bottom: 84px !important; }
+}
+
+/* Pantalla ancha pero vertical */
+@media (min-width: 900px) and (max-aspect-ratio: 1/1) {
+  .heroimg { object-position: 50% 15% !important; }
+}
+
+/* ---------- Páginas internas ---------- */
+.pagepad { padding-top: 40px; }
+
+/* ---------- Escritorio: menú vertical a la izquierda ---------- */
+@media (min-width: 900px) {
+  .shell { padding-left: 100px; }
+  .herofull { margin-left: -100px; }
+  .dockwrap {
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 22px !important;
+    right: auto !important;
+    padding: 0 !important;
+    align-items: center !important;
+  }
+  .dock { flex-direction: column !important; padding: 10px 7px !important; gap: 10px !important; }
+  .dock button { width: 46px !important; padding: 0 !important; justify-content: center !important; }
+  .navlabel { display: none !important; }
+  .playerbar { bottom: 32px; }
+  .pagepad { padding-top: 56px; }
+}
+
+/* ---------- Accesibilidad ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
