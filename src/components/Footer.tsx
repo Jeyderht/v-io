@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useVio, vio } from "@/lib/useVio";
-import { IconAMedida, IconExplorar, IconMensajes } from "./icons";
 
 /** Pie de página: enlaces, métodos de pago, firma y "Volver arriba". */
 export function Footer() {
@@ -32,12 +31,10 @@ export function Footer() {
             <Link className="flink" href="/visuales">
               Visuales
             </Link>
-            <button className="flink inline-flex items-center gap-2" type="button" onClick={verCategorias}>
-              <IconExplorar size={20} />
+            <button className="flink" type="button" onClick={verCategorias}>
               Categorías
             </button>
-            <button className="flink inline-flex items-center gap-2" type="button" onClick={openQuote}>
-              <IconAMedida size={20} />
+            <button className="flink" type="button" onClick={openQuote}>
               Visuales a medida
             </button>
             <Link className="flink" href="/planes">
@@ -52,8 +49,7 @@ export function Footer() {
             <Link className="flink" href="/visuales">
               Mis visuales
             </Link>
-            <Link className="flink inline-flex items-center gap-2" href="/contacto#preguntas">
-              <IconMensajes size={20} />
+            <Link className="flink" href="/contacto#preguntas">
               Preguntas frecuentes
             </Link>
             <Link className="flink" href="/contacto">
@@ -68,8 +64,7 @@ export function Footer() {
             <button className="flink" type="button" onClick={openLogin}>
               Ingresar con código
             </button>
-            <button className="flink inline-flex items-center gap-2" type="button" onClick={openQuote}>
-              <IconAMedida size={20} />
+            <button className="flink" type="button" onClick={openQuote}>
               Cotizar a medida
             </button>
           </nav>

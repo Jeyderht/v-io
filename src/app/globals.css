@@ -231,6 +231,20 @@
       padding-right: 26px !important;
     }
   }
+  /* Teléfonos: cada enlace del footer cabe en una sola línea (las columnas nunca son más angostas que su enlace más largo) */
+  @media (max-width: 400px) {
+    .vfoot > div {
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+    }
+    .fgrid {
+      grid-template-columns: minmax(max-content, 1fr) minmax(max-content, 1fr);
+      column-gap: 12px;
+    }
+    .flink {
+      font-size: 15px;
+    }
+  }
   /* Pantallas muy angostas: "Volver arriba" queda solo como icono (el texto sigue para lectores de pantalla) */
   @media (max-width: 370px) {
     .toplabel {
