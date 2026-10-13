@@ -3,7 +3,7 @@
 import { PRECIO_A_MEDIDA } from "@/content/planes";
 import { vio } from "@/lib/useVio";
 import { Hero } from "./Hero";
-import { IconFlecha } from "./icons";
+import { IconAMedida, IconFlecha } from "./icons";
 
 const MARQUESINA = ["VJ loops", "LED walls", "4K", "Resolume ready", "Intros DJ", "Licencia eventos"];
 
@@ -100,8 +100,8 @@ export function InicioView() {
                 type="button"
                 onClick={openQuote}
               >
+                <IconAMedida size={20} />
                 Cotizar mi visual
-                <IconFlecha size={18} />
               </button>
               <span className="text-[15px] text-muted">
                 Desde <strong className="text-ink">{PRECIO_A_MEDIDA}</strong>

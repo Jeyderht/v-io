@@ -4,7 +4,7 @@ import { PLANES } from "@/content/planes";
 import { cx } from "@/lib/estilos";
 import { waLink } from "@/lib/formato";
 import { useVio, vio } from "@/lib/useVio";
-import { IconFlecha } from "../icons";
+import { IconFlecha, IconPlanes } from "../icons";
 import { PeriodoToggle } from "../PlanCard";
 import { Asa, BotonCerrar, CAMPO_HOJA, ETIQUETA_HOJA, FONDO_HOJA, Overlay, VENTANA_HOJA } from "./Sheet";
 
@@ -24,9 +24,7 @@ export function SuscripcionSheet() {
       <Asa />
       <div className="flex gap-4 items-center">
         <span className="w-14 h-14 shrink-0 rounded-[50%] bg-(--accent) inline-flex items-center justify-center text-white" aria-hidden="true">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round" strokeLinecap="round">
-            <path d="M4.5 6h15A1.5 1.5 0 0121 7.5V10a2 2 0 000 4v2.5a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 16.5V14a2 2 0 000-4V7.5A1.5 1.5 0 014.5 6z" />
-          </svg>
+          <IconPlanes size={26} />
         </span>
         <div className="flex flex-col gap-0.5 flex-1 min-w-0">
           <span className="font-extrabold tracking-[-0.04em] text-[22px]">{sp.name}</span>

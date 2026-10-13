@@ -284,7 +284,8 @@
       padding: 10px 7px !important;
       gap: 10px !important;
     }
-    .dock a {
+    .dock a,
+    .dock button {
       width: 46px !important;
       padding: 0 !important;
       justify-content: center !important;

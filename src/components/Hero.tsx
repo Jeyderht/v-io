@@ -8,7 +8,7 @@ import { cx } from "@/lib/estilos";
 import { heroView, PORTADA_DEFECTO } from "@/lib/portada";
 import { useVio, vio } from "@/lib/useVio";
 import { miembroActivo } from "@/lib/vistas";
-import { IconFlecha, IconUsuario } from "./icons";
+import { IconCuenta, IconFlecha } from "./icons";
 
 /** Portada a pantalla completa (imágenes administrables desde Admin → Portada). */
 export function Hero() {
@@ -36,7 +36,7 @@ export function Hero() {
               onClick={() => vio.set({ loginOpen: true, loginErr: "" })}
               aria-label={member ? "Mi cuenta" : "Ingresar"}
             >
-              <IconUsuario />
+              <IconCuenta size={20} />
             </button>
             <button
               className="press min-h-11 py-2.5 px-4.5 rounded-full border-[0.5px] border-solid border-[#FFFFFF1F] bg-[#FFFFFF1F] text-white cursor-pointer text-[15px] font-semibold backdrop-blur-[20px]"

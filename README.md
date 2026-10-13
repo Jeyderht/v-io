@@ -31,17 +31,17 @@ Hecha con **Next.js 16 (App Router) + TypeScript + Tailwind CSS 4**, exportada c
 
 ## Dónde editar cada cosa
 
-| Quiero cambiar…                                    | Archivo                                  |
-| -------------------------------------------------- | ---------------------------------------- |
-| Precios, nombres, beneficios y dispositivos        | `src/content/planes.ts` → `PLANES`       |
-| Precio "desde" de visuales a medida                | `src/content/planes.ts` → `PRECIO_A_MEDIDA` |
-| Duraciones al crear un acceso                      | `src/content/planes.ts` → `DURACIONES_ACCESO` |
-| Preguntas frecuentes                               | `src/content/faq.ts`                     |
-| Licencia, Términos y Privacidad                    | `src/content/legales.ts`                 |
-| Categorías, tipos de cotización, catálogo de ejemplo | `src/content/catalogo.ts`             |
-| Portada por defecto (imágenes, encuadre, alto)     | `src/lib/portada.ts` → `PORTADA_DEFECTO` (o desde Admin → Portada) |
-| Textos fijos de una página                         | el componente en `src/components/`       |
-| WhatsApp, color de acento, Supabase                | variables de entorno (ver abajo)         |
+| Quiero cambiar…                                      | Archivo                                                            |
+| ---------------------------------------------------- | ------------------------------------------------------------------ |
+| Precios, nombres, beneficios y dispositivos          | `src/content/planes.ts` → `PLANES`                                 |
+| Precio "desde" de visuales a medida                  | `src/content/planes.ts` → `PRECIO_A_MEDIDA`                        |
+| Duraciones al crear un acceso                        | `src/content/planes.ts` → `DURACIONES_ACCESO`                      |
+| Preguntas frecuentes                                 | `src/content/faq.ts`                                               |
+| Licencia, Términos y Privacidad                      | `src/content/legales.ts`                                           |
+| Categorías, tipos de cotización, catálogo de ejemplo | `src/content/catalogo.ts`                                          |
+| Portada por defecto (imágenes, encuadre, alto)       | `src/lib/portada.ts` → `PORTADA_DEFECTO` (o desde Admin → Portada) |
+| Textos fijos de una página                           | el componente en `src/components/`                                 |
+| WhatsApp, color de acento, Supabase                  | variables de entorno (ver abajo)                                   |
 
 - Si cambias los **dispositivos** de un plan, cambia también la función `max_disp` en `supabase/schema.sql` y vuelve a ejecutarla.
 - No cambies los `id` de planes ni de categorías (`dj`, `pro`, `prod`, `vj`, `led`…): se guardan en la base.
@@ -69,13 +69,13 @@ npm run format     # formatea todo con Prettier
 
 ## Variables de entorno
 
-| Variable                         | Valor                                                    |
-| -------------------------------- | -------------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`       | Supabase → Project Settings → API → Project URL          |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`  | Supabase → Project Settings → API Keys → **Publishable key** (`sb_publishable_…`) |
-| `NEXT_PUBLIC_WHATSAPP`           | WhatsApp con código de país, solo números (Perú = 51)    |
-| `NEXT_PUBLIC_ACCENT`             | Color de acento, por ejemplo `#1CA9E5`                   |
-| `NEXT_PUBLIC_SITE_URL`           | URL pública del sitio, sin barra final (sitemap, robots, Open Graph) |
+| Variable                        | Valor                                                                             |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase → Project Settings → API → Project URL                                   |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API Keys → **Publishable key** (`sb_publishable_…`) |
+| `NEXT_PUBLIC_WHATSAPP`          | WhatsApp con código de país, solo números (Perú = 51)                             |
+| `NEXT_PUBLIC_ACCENT`            | Color de acento, por ejemplo `#1CA9E5`                                            |
+| `NEXT_PUBLIC_SITE_URL`          | URL pública del sitio, sin barra final (sitemap, robots, Open Graph)              |
 
 Todas son públicas: se incrustan en el JavaScript del sitio. **Nunca** uses la clave `secret` ni la `service_role` de Supabase. `.env.local` está en `.gitignore`.
 

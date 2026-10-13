@@ -5,7 +5,7 @@ import { nombrePlan } from "@/content/planes";
 import { chip, cx } from "@/lib/estilos";
 import { useVio, vio } from "@/lib/useVio";
 import { etiquetaFiltro, miembroActivo, tarjetasVisuales } from "@/lib/vistas";
-import { IconCerrar, IconUsuario } from "./icons";
+import { IconAMedida, IconBuscar, IconCerrar, IconCuenta, IconExplorar } from "./icons";
 import { VisualCard } from "./VisualCard";
 
 export function VisualesView() {
@@ -24,7 +24,7 @@ export function VisualesView() {
           type="button"
           onClick={() => vio.set({ loginOpen: true, loginErr: "" })}
         >
-          <IconUsuario size={18} strokeWidth="1.8" />
+          <IconCuenta size={20} />
           {member ? nombrePlan(member.plan) + " activo" : "Ingresar"}
         </button>
       </div>
@@ -34,10 +34,7 @@ export function VisualesView() {
         className="flex items-center gap-2.5 pr-2 pl-4.5 pt-0 pb-0 min-h-13 rounded-full bg-[#FFFFFF14] border-[0.5px] border-solid border-[#FFFFFF14] backdrop-blur-[24px] shadow-[inset_0_0.5px_0_#FFFFFF26] cursor-text"
         htmlFor="buscar-v"
       >
-        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9DB0C2" strokeWidth="1.8" strokeLinecap="round">
-          <circle cx="10.8" cy="10.8" r="6.8" />
-          <path d="M15.8 15.8l4.7 4.7" />
-        </svg>
+        <IconBuscar size={20} className="shrink-0 text-muted" />
         <span className="absolute w-px h-px overflow-hidden [clip:rect(0_0_0_0)]">Buscar visuales</span>
         <input
           className="flex-1 min-w-0 h-12 border-0 outline-none bg-transparent text-ink text-[17px]"
@@ -65,10 +62,11 @@ export function VisualesView() {
           <span className="text-[20px] font-bold">Nuevos visuales muy pronto</span>
           <span className="text-[15px] text-muted">Estamos cargando el catálogo. Mientras tanto, cotiza un visual a medida.</span>
           <button
-            className="press mt-1.5 min-h-11 py-2.5 px-5 rounded-full border-0 bg-ink text-night text-[15px] font-bold cursor-pointer"
+            className="press mt-1.5 inline-flex items-center gap-2 min-h-11 py-2.5 px-5 rounded-full border-0 bg-ink text-night text-[15px] font-bold cursor-pointer"
             type="button"
             onClick={() => vio.set({ quoteOpen: true })}
           >
+            <IconAMedida size={20} />
             Cotizar a medida
           </button>
         </div>
@@ -94,8 +92,11 @@ export function VisualesView() {
           onClick={() => vio.set({ filtersOpen: !e.filtersOpen })}
           aria-expanded={e.filtersOpen}
         >
-          <span>
-            Filtros <span className="text-[15px] font-medium text-[#FFFFFFB3]">{e.filter === "all" ? "" : "· " + etiquetaFiltro(e.filter)}</span>
+          <span className="inline-flex items-center gap-2.5">
+            <IconExplorar size={20} />
+            <span>
+              Filtros <span className="text-[15px] font-medium text-[#FFFFFFB3]">{e.filter === "all" ? "" : "· " + etiquetaFiltro(e.filter)}</span>
+            </span>
           </span>
           <svg
             aria-hidden="true"

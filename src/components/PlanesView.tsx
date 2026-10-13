@@ -2,6 +2,7 @@
 
 import { PLANES, PRECIO_A_MEDIDA } from "@/content/planes";
 import { useVio, vio } from "@/lib/useVio";
+import { IconAMedida } from "./icons";
 import { PeriodoToggle, PlanCard } from "./PlanCard";
 
 export function PlanesView() {
@@ -27,10 +28,11 @@ export function PlanesView() {
           <span className="text-[15px] text-muted">Logos animados, intros, LED y shows completos · desde {PRECIO_A_MEDIDA}</span>
         </div>
         <button
-          className="press min-h-12 py-3 px-5.5 border-0 cursor-pointer rounded-full bg-ink text-night text-[15px] font-bold"
+          className="press inline-flex items-center gap-2 min-h-12 py-3 px-5.5 border-0 cursor-pointer rounded-full bg-ink text-night text-[15px] font-bold"
           type="button"
           onClick={() => vio.set({ quoteOpen: true })}
         >
+          <IconAMedida size={20} />
           Cotizar
         </button>
       </div>

@@ -8,7 +8,7 @@ import { cx } from "@/lib/estilos";
 import { fmtDate, waLink } from "@/lib/formato";
 import { useVio, vio } from "@/lib/useVio";
 import { miembroActivo } from "@/lib/vistas";
-import { IconEstrella, IconFlecha, IconTicket, IconUsuario, IconWhatsApp } from "./icons";
+import { IconAMedida, IconContacto, IconCuenta, IconFlecha, IconMensajes, IconPlanes } from "./icons";
 
 const tarjeta =
   "press flex items-center gap-4.5 py-5.5 px-6 rounded-[30px] cursor-pointer text-left text-ink bg-[#FFFFFF0F] border-[0.5px] border-solid border-[#FFFFFF14] shadow-[inset_0_0.5px_0_#FFFFFF26]";
@@ -43,7 +43,7 @@ export function ContactoView() {
         rel="noopener"
       >
         <span className="w-13 h-13 shrink-0 rounded-[50%] bg-night text-ink inline-flex items-center justify-center" aria-hidden="true">
-          <IconWhatsApp />
+          <IconContacto size={20} />
         </span>
         <span className="flex flex-col gap-0.5 flex-1 min-w-0">
           <strong className="text-[19px] font-bold">WhatsApp</strong>
@@ -52,20 +52,23 @@ export function ContactoView() {
         <IconFlecha />
       </a>
       <button className={tarjeta} type="button" onClick={() => vio.set({ quoteOpen: true })}>
-        <Contenido icon={<IconEstrella />} titulo="Cotizar visual a medida" sub={"Logos, intros, LED y shows · desde " + PRECIO_A_MEDIDA} />
+        <Contenido icon={<IconAMedida size={20} />} titulo="Cotizar visual a medida" sub={"Logos, intros, LED y shows · desde " + PRECIO_A_MEDIDA} />
       </button>
       <Link className={cx(tarjeta, "no-underline tracking-normal")} href="/planes">
-        <Contenido icon={<IconTicket />} titulo="Ver planes" sub="Suscripción mensual o anual" />
+        <Contenido icon={<IconPlanes size={20} />} titulo="Ver planes" sub="Suscripción mensual o anual" />
       </Link>
       <button className={tarjeta} type="button" onClick={() => vio.set({ loginOpen: true, loginErr: "" })}>
         <Contenido
-          icon={<IconUsuario size={24} />}
+          icon={<IconCuenta size={20} />}
           titulo={member ? "Mi cuenta" : "Ingresar con mi código"}
           sub={member ? nombrePlan(member.plan) + " activo hasta el " + fmtDate(member.expira) : "Accede a todo el catálogo premium"}
         />
       </button>
 
-      <h2 className="mx-0 mt-4 mb-0 font-extrabold tracking-[-0.03em] text-[24px] text-ink">Preguntas frecuentes</h2>
+      <h2 id="preguntas" className="mx-0 mt-4 mb-0 scroll-mt-6 flex items-center gap-2.5 font-extrabold tracking-[-0.03em] text-[24px] text-ink">
+        <IconMensajes size={24} className="shrink-0" />
+        Preguntas frecuentes
+      </h2>
       <div className="rounded-[28px] overflow-hidden bg-[#FFFFFF0F] border-[0.5px] border-solid border-[#FFFFFF12] shadow-[inset_0_0.5px_0_#FFFFFF26]">
         {FAQ.map((f, i) => (
           <details key={f.q} className={cx("py-4 px-5.5", i > 0 && "[border-top:0.5px_solid_#FFFFFF0F]")}>

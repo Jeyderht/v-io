@@ -6,7 +6,7 @@ import { btnGrande, cx } from "@/lib/estilos";
 import { fmtDate } from "@/lib/formato";
 import { useVio, vio } from "@/lib/useVio";
 import { miembroActivo } from "@/lib/vistas";
-import { IconAdmin, IconUsuario } from "../icons";
+import { IconAdmin, IconCuenta } from "../icons";
 import { Asa, BotonCerrar, ETIQUETA_HOJA, FONDO_HOJA, Overlay, VENTANA_HOJA } from "./Sheet";
 
 /** Hoja "Ingresar" (código de acceso) o "Mi cuenta" si ya hay sesión. */
@@ -26,7 +26,7 @@ export function LoginSheet() {
       <Asa />
       <div className="flex gap-4 items-center">
         <span className="w-14 h-14 shrink-0 rounded-[50%] bg-(--accent) inline-flex items-center justify-center text-white" aria-hidden="true">
-          <IconUsuario size={26} />
+          <IconCuenta size={26} />
         </span>
         <div className="flex flex-col gap-0.5 flex-1 min-w-0">
           <span className="font-extrabold tracking-[-0.04em] text-[22px]">{titulo}</span>
