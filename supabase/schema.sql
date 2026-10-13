@@ -126,6 +126,28 @@ create policy "admin ajustes" on public.ajustes for all to authenticated
 grant select on public.ajustes to anon, authenticated;
 grant insert, update, delete on public.ajustes to authenticated;
 
+-- Portada con video: bucket público "portada" en Storage
+-- (máx. 15 MB; mp4, webm, jpg, png, webp). Lectura pública; subir/editar/borrar solo administradores.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('portada', 'portada', true, 15728640, array['video/mp4', 'video/webm', 'image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update
+  set public = excluded.public,
+      file_size_limit = excluded.file_size_limit,
+      allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "portada lectura publica" on storage.objects;
+create policy "portada lectura publica" on storage.objects for select to anon, authenticated
+  using (bucket_id = 'portada');
+drop policy if exists "portada admin sube" on storage.objects;
+create policy "portada admin sube" on storage.objects for insert to authenticated
+  with check (bucket_id = 'portada' and public.es_admin());
+drop policy if exists "portada admin edita" on storage.objects;
+create policy "portada admin edita" on storage.objects for update to authenticated
+  using (bucket_id = 'portada' and public.es_admin()) with check (bucket_id = 'portada' and public.es_admin());
+drop policy if exists "portada admin borra" on storage.objects;
+create policy "portada admin borra" on storage.objects for delete to authenticated
+  using (bucket_id = 'portada' and public.es_admin());
+
 -- =========================================================
 --  PASO FINAL: hazte administradora.
 --  1) Crea tu usuario en Authentication → Users → Add user

@@ -97,6 +97,9 @@ export interface CodigoNuevo {
 }
 
 export type ModoPortada = "derecha" | "completa";
+export type TipoPortada = "imagen" | "video";
+/** Lado de la portada: d = escritorio, m = móvil */
+export type LadoPortada = "d" | "m";
 
 /** Configuración de la portada (tabla ajustes, clave 'portada'). */
 export interface PortadaCfg {
@@ -113,4 +116,12 @@ export interface PortadaCfg {
   mY: number;
   mH: number;
   dark: number;
+  /** Escritorio: imagen o video (URLs públicas del bucket "portada") */
+  dTipo: TipoPortada;
+  dVideo: string;
+  dPoster: string;
+  /** Móvil: imagen o video. Sin video propio usa el de escritorio (o su imagen). */
+  mTipo: TipoPortada;
+  mVideo: string;
+  mPoster: string;
 }

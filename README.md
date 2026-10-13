@@ -118,4 +118,7 @@ El repositorio ya trae `netlify.toml`:
 
 - **Admin → Visuales**: pega el enlace de un archivo de Google Drive (compartido como "Cualquier persona con el enlace"), título, categoría y si es Premium.
 - **Admin → Miembros**: cuando un cliente paga, crea su código y envíalo por WhatsApp (el botón arma el mensaje). El código se muestra una sola vez. "Liberar dispositivos" si cambia de equipo; "+1 mes" renueva.
-- **Admin → Portada**: imágenes de escritorio y móvil, diseño, encuadre, alto y oscurecido, con vista previa. Se publica al tocar **Guardar portada**.
+- **Admin → Portada**: imágenes o **video** para escritorio y para móvil por separado, diseño, encuadre, alto y oscurecido, con vista previa. Los cambios de diseño se publican al tocar **Guardar portada**; un video se publica apenas termina de subir.
+  - Video: MP4 o WebM hasta 15 MB (ideal: menos de 4 MB en escritorio y 3 MB en móvil). El póster (imagen mientras carga) se crea solo con un cuadro del video y se puede reemplazar. Al reemplazar o quitar un video se borra el anterior del bucket.
+  - Si el móvil no tiene video propio usa el de escritorio (o su imagen). Con movimiento reducido, ahorro de datos o conexión 2G/3G la portada muestra solo el póster.
+  - Requiere el bucket `portada` de Storage (está en `supabase/schema.sql`).

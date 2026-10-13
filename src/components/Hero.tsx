@@ -7,15 +7,24 @@ import { nombrePlan } from "@/content/planes";
 import { cx } from "@/lib/estilos";
 import { heroView, PORTADA_DEFECTO } from "@/lib/portada";
 import { useVio, vio } from "@/lib/useVio";
+import { MQ_ESCRITORIO, useMediaQuery, useVideoPermitido } from "@/lib/useMedia";
 import { miembroActivo } from "@/lib/vistas";
 import { IconCuenta, IconFlecha } from "./icons";
+import { VideoPortada } from "./VideoPortada";
 
-/** Portada a pantalla completa (imágenes administrables desde Admin → Portada). */
+/**
+ * Portada a pantalla completa: imágenes o video, administrables desde Admin → Portada.
+ * Solo se monta el video del formato visible (escritorio o móvil), y nunca con movimiento
+ * reducido, ahorro de datos o conexión lenta: ahí queda el póster.
+ */
 export function Hero() {
   const e = useVio();
   const member = miembroActivo(e);
   const hero = heroView({ ...PORTADA_DEFECTO, ...(e.heroSaved || {}) }, false);
   const openPro = () => vio.set({ sheetPlan: "pro", emailTouched: false });
+  const escritorio = useMediaQuery(MQ_ESCRITORIO);
+  const permitido = useVideoPermitido();
+  const video = permitido ? (escritorio ? hero.dVideo : hero.mVideo) : "";
   return (
     <section className="herofull relative min-h-130 box-border" style={{ "--hd": hero.hd, "--hm": hero.hm } as CSSProperties}>
       <div className="herostage relative w-full h-full overflow-hidden">
@@ -23,6 +32,14 @@ export function Hero() {
         {hero.hasD2 && <img className="hero-d" src={hero.d2} alt="" aria-hidden="true" referrerPolicy="no-referrer" style={hero.d2Style} />}
         <img className="hero-m" src={hero.m1} alt="" aria-hidden="true" referrerPolicy="no-referrer" style={hero.m1Style} />
         {hero.hasM2 && <img className="hero-m" src={hero.m2} alt="" aria-hidden="true" referrerPolicy="no-referrer" style={hero.m2Style} />}
+        {video && (
+          <VideoPortada
+            src={video}
+            poster={escritorio ? hero.d1 : hero.m1}
+            className={escritorio ? "hero-d" : "hero-m"}
+            style={escritorio ? hero.d1Style : hero.m1Style}
+          />
+        )}
         <div aria-hidden="true" style={hero.dark} />
         <div className="absolute top-5.5 left-6 right-6 z-2 flex justify-between items-center">
           <span className="font-bold text-[26px] tracking-[-0.02em] leading-[1] text-ink">V-IO</span>

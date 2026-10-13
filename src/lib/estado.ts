@@ -4,7 +4,7 @@
  * (src/lib/useVio.ts). Así el estado sobrevive al cambiar de página, igual
  * que en la versión de un solo archivo.
  */
-import type { AdminTab, CategoriaId, CodigoNuevo, FiltroId, Miembro, PlanId, PortadaCfg, Sesion, TipoArchivo, Visual } from "@/types";
+import type { AdminTab, CategoriaId, CodigoNuevo, FiltroId, LadoPortada, Miembro, PlanId, PortadaCfg, Sesion, TipoArchivo, TipoPortada, Visual } from "@/types";
 import { alCerrarSesion, cerrarSesion, esAdmin, haySesion, iniciarSesion } from "./auth";
 import { cambiarPremium, cargarCatalogo, eliminarVisual, publicarVisual } from "./catalogo";
 import { genCode, hashCodigo, normCode } from "./codigos";
@@ -12,7 +12,20 @@ import { CONFIGURADO } from "./config";
 import { deviceId } from "./dispositivo";
 import { addMonths, parseDrive } from "./formato";
 import { canjear, cargarMiembros, crearMiembro, liberarDispositivos, quitarMiembro, renovarMiembro } from "./miembros";
-import { cargarPortada, guardarPortada, PORTADA_DEFECTO } from "./portada";
+import {
+  borrarArchivosPortada,
+  cargarPortada,
+  enMB,
+  generarPoster,
+  guardarPortada,
+  MAX_ARCHIVO,
+  NOMBRE_LADO,
+  PORTADA_DEFECTO,
+  subirArchivoPortada,
+  TIPOS_POSTER,
+  TIPOS_VIDEO,
+  VIDEO_RECOMENDADO,
+} from "./portada";
 import { CLAVES, guardar, leer } from "./storage";
 
 export interface Estado {
@@ -79,7 +92,19 @@ export interface Estado {
   heroSaving: boolean;
   heroMsg: string;
   heroErr: boolean;
+  /** Subida de video/póster de la portada, por lado (d = escritorio, m = móvil) */
+  portadaSubida: Record<LadoPortada, SubidaPortada>;
 }
+
+export interface SubidaPortada {
+  ocupado: boolean;
+  /** Qué está pasando ("Subiendo video…", "Creando el póster…") */
+  fase: string;
+  aviso: string;
+  error: string;
+  ok: string;
+}
+const SUBIDA_LIBRE: SubidaPortada = { ocupado: false, fase: "", aviso: "", error: "", ok: "" };
 
 export const ESTADO_INICIAL: Estado = {
   ahora: 0,
@@ -135,6 +160,7 @@ export const ESTADO_INICIAL: Estado = {
   heroSaving: false,
   heroMsg: "",
   heroErr: false,
+  portadaSubida: { d: SUBIDA_LIBRE, m: SUBIDA_LIBRE },
 };
 
 const mensaje = (e: unknown) => (e && typeof e === "object" && "message" in e && String((e as { message: unknown }).message)) || "error";
@@ -357,17 +383,138 @@ class VioStore {
     this.set({ heroDraft: { ...(this.estado.heroDraft || this.heroCfg()), [k]: val }, heroMsg: "" });
   saveHero = async (): Promise<void> => {
     if (this.estado.heroSaving) return;
-    const valor = { ...(this.estado.heroDraft || this.heroCfg()) };
+    const antes = this.heroCfg();
+    const valor = { ...(this.estado.heroDraft || antes) };
     this.set({ heroSaving: true, heroMsg: "" });
     try {
       await guardarPortada(valor);
       this.set({ heroSaving: false, heroSaved: valor, heroMsg: "Portada guardada y publicada", heroErr: false });
+      // Videos o pósters que ya no usa la portada (por ejemplo, tras "Restablecer original")
+      await this.limpiarArchivos([antes], [valor]);
     } catch (err) {
       this.set({ heroSaving: false, heroMsg: "No se pudo guardar: " + mensaje(err) + ". ¿Corriste el SQL de la portada en Supabase?", heroErr: true });
     }
   };
   resetHero = (): void =>
     this.set({ heroDraft: { ...PORTADA_DEFECTO }, heroMsg: "Valores originales cargados. Toca Guardar para aplicarlos.", heroErr: false });
+
+  // ---------- admin: portada con video ----------
+  private setSubida = (lado: LadoPortada, cambio: Partial<SubidaPortada>): void =>
+    this.set({ portadaSubida: { ...this.estado.portadaSubida, [lado]: { ...this.estado.portadaSubida[lado], ...cambio } } });
+
+  /** URLs de video/póster que referencia una o más configuraciones. */
+  private archivosDe = (...cfgs: Partial<PortadaCfg>[]): Set<string> =>
+    new Set(cfgs.flatMap((c) => [c.dVideo, c.dPoster, c.mVideo, c.mPoster]).filter((u): u is string => !!u));
+
+  /** Borra del bucket los archivos que estaban en `antes` y ya no están en `ahora`. */
+  private limpiarArchivos = async (antes: Partial<PortadaCfg>[], ahora: Partial<PortadaCfg>[]): Promise<void> => {
+    const vivos = this.archivosDe(...ahora);
+    const sobran = [...this.archivosDe(...antes)].filter((u) => !vivos.has(u));
+    if (!sobran.length) return;
+    try {
+      await borrarArchivosPortada(sobran);
+    } catch {
+      /* si no se pudieron borrar quedan en el bucket; la web no los usa */
+    }
+  };
+
+  /**
+   * Publica de inmediato el video/póster de un lado (y lo copia al borrador),
+   * y borra del bucket los archivos que reemplaza.
+   */
+  private publicarMedios = async (lado: LadoPortada, m: { tipo?: TipoPortada; video?: string; poster?: string }): Promise<void> => {
+    const cambio: Partial<PortadaCfg> =
+      lado === "d" ? { dTipo: m.tipo, dVideo: m.video, dPoster: m.poster } : { mTipo: m.tipo, mVideo: m.video, mPoster: m.poster };
+    const limpio = Object.fromEntries(Object.entries(cambio).filter(([, v]) => v !== undefined)) as Partial<PortadaCfg>;
+    const antesPub = this.heroCfg();
+    const antesBorrador = this.estado.heroDraft || antesPub;
+    const publicado: PortadaCfg = { ...antesPub, ...limpio };
+    const borrador: PortadaCfg = { ...antesBorrador, ...limpio };
+    await guardarPortada(publicado);
+    this.set({ heroSaved: publicado, heroDraft: borrador });
+    await this.limpiarArchivos([antesPub, antesBorrador], [publicado, borrador]);
+  };
+
+  /** Sube el video de un lado, crea su póster con un cuadro del video y lo publica. */
+  subirVideoPortada = async (lado: LadoPortada, archivo: File): Promise<void> => {
+    if (this.estado.portadaSubida[lado].ocupado) return;
+    const limpiar = { aviso: "", error: "", ok: "" };
+    if (!TIPOS_VIDEO.includes(archivo.type))
+      return this.setSubida(lado, { ...limpiar, error: "Ese archivo no es MP4 ni WebM. Exporta el video en uno de esos formatos." });
+    if (archivo.size > MAX_ARCHIVO)
+      return this.setSubida(lado, {
+        ...limpiar,
+        error: `El video pesa ${enMB(archivo.size)} y el máximo es 15 MB. Comprímelo o recórtalo e inténtalo de nuevo.`,
+      });
+    const pesado =
+      archivo.size > VIDEO_RECOMENDADO[lado]
+        ? `Pesa ${enMB(archivo.size)}: se puede usar, pero ${lado === "d" ? "en escritorio conviene menos de 4 MB" : "en celulares conviene menos de 3 MB"} para que cargue rápido.`
+        : "";
+    this.setSubida(lado, { ...limpiar, ocupado: true, fase: `Subiendo video (${enMB(archivo.size)})…`, aviso: pesado });
+    const base = NOMBRE_LADO[lado] + "-" + Date.now();
+    const subidos: string[] = [];
+    try {
+      const video = await subirArchivoPortada(base + (archivo.type === "video/webm" ? ".webm" : ".mp4"), archivo, archivo.type);
+      subidos.push(video);
+      let poster = "";
+      let sinPoster = "";
+      this.setSubida(lado, { fase: "Creando el póster…" });
+      try {
+        poster = await subirArchivoPortada(base + "-poster.jpg", await generarPoster(archivo), "image/jpeg");
+        subidos.push(poster);
+      } catch {
+        sinPoster = 'No se pudo crear el póster automático: sube una imagen con "Cambiar póster".';
+      }
+      this.setSubida(lado, { fase: "Publicando…" });
+      await this.publicarMedios(lado, { tipo: "video", video, poster });
+      this.setSubida(lado, { ocupado: false, fase: "", aviso: [pesado, sinPoster].filter(Boolean).join(" "), ok: "Video subido y publicado." });
+    } catch (err) {
+      if (subidos.length) await borrarArchivosPortada(subidos).catch(() => {});
+      this.setSubida(lado, { ocupado: false, fase: "", error: "No se pudo subir el video: " + explicarSubida(err) });
+    }
+  };
+
+  /** Reemplaza el póster (imagen que se ve mientras carga el video). */
+  subirPosterPortada = async (lado: LadoPortada, archivo: File): Promise<void> => {
+    if (this.estado.portadaSubida[lado].ocupado) return;
+    const limpiar = { aviso: "", error: "", ok: "" };
+    if (!TIPOS_POSTER.includes(archivo.type)) return this.setSubida(lado, { ...limpiar, error: "El póster debe ser una imagen JPG, PNG o WebP." });
+    if (archivo.size > MAX_ARCHIVO) return this.setSubida(lado, { ...limpiar, error: `La imagen pesa ${enMB(archivo.size)} y el máximo es 15 MB.` });
+    this.setSubida(lado, { ...limpiar, ocupado: true, fase: "Subiendo póster…" });
+    const ext = archivo.type === "image/png" ? "png" : archivo.type === "image/webp" ? "webp" : "jpg";
+    let subido = "";
+    try {
+      subido = await subirArchivoPortada(NOMBRE_LADO[lado] + "-poster-" + Date.now() + "." + ext, archivo, archivo.type);
+      await this.publicarMedios(lado, { poster: subido });
+      this.setSubida(lado, { ocupado: false, fase: "", ok: "Póster actualizado." });
+    } catch (err) {
+      if (subido) await borrarArchivosPortada([subido]).catch(() => {});
+      this.setSubida(lado, { ocupado: false, fase: "", error: "No se pudo subir el póster: " + explicarSubida(err) });
+    }
+  };
+
+  /** Quita el video de un lado (vuelve a imagen) y lo borra del bucket. */
+  quitarVideoPortada = async (lado: LadoPortada): Promise<void> => {
+    if (this.estado.portadaSubida[lado].ocupado) return;
+    this.setSubida(lado, { ocupado: true, fase: "Quitando video…", aviso: "", error: "", ok: "" });
+    try {
+      await this.publicarMedios(lado, { tipo: "imagen", video: "", poster: "" });
+      this.setSubida(lado, { ocupado: false, fase: "", ok: "Video quitado: se muestra la imagen." });
+    } catch (err) {
+      this.setSubida(lado, { ocupado: false, fase: "", error: "No se pudo quitar el video: " + explicarSubida(err) });
+    }
+  };
+}
+
+/** Mensaje claro para errores de Storage. */
+function explicarSubida(err: unknown): string {
+  const m = String(mensaje(err));
+  if (/row-level security|unauthorized|403/i.test(m)) return "tu sesión no tiene permiso de administrador. Sal y vuelve a entrar.";
+  if (/bucket not found/i.test(m)) return 'no existe el bucket "portada". Corre el SQL de Storage en Supabase.';
+  if (/maximum allowed size|too large|413/i.test(m)) return "supera el límite de 15 MB del bucket.";
+  if (/mime type/i.test(m)) return "el bucket no acepta ese formato.";
+  if (/failed to fetch|network/i.test(m)) return "se cortó la conexión. Revisa tu internet e inténtalo de nuevo.";
+  return m;
 }
 
 /** Única instancia (la web es una sola aplicación en el navegador). */

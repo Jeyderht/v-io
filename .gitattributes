@@ -1,0 +1,4 @@
+# Saltos de línea LF en todas las copias (Windows incluido), igual que Prettier
+* text=auto eol=lf
+*.jpg binary
+*.png binary

@@ -462,6 +462,14 @@
     transform: scale(1.04);
   }
 }
+@keyframes cargando {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
 @keyframes kenburns {
   from {
     transform: scale(1);
